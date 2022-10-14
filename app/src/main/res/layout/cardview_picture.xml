@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="400dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+    android:layout_margin="10dp"
+    android:padding="10dp"
+    app:cardBackgroundColor="#FAFAFA">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <!--        图片、标题、作者 垂直分布-->
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -18,82 +22,38 @@
 
             <!--            图片-->
             <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/imageview_picture"
+                android:id="@+id/imageview_mypicture"
                 android:layout_width="match_parent"
                 android:layout_height="232dp"
                 android:layout_margin="10dp"
                 android:cropToPadding="false"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_baseline_person_24" />
+                android:src="@drawable/customer_selected" />
             <!--            //w348-->
 
             <!--            title-->
             <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/textview_picture_title"
+                android:id="@+id/textview_mypicture_title"
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
+                android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text=""
+                android:gravity="left"
+                android:paddingStart="10dp"
+                android:text="这是标题"
                 android:textColor="@color/black"
-                android:textSize="15sp" />
+                android:textSize="20sp" />
             <!--            author-->
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/textview_picture_author"
                 android:layout_width="match_parent"
-                android:layout_height="15dp"
+                android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text=""
-                android:textSize="12sp" />
+                android:gravity="left"
+                android:paddingStart="10dp"
+                android:text="这是作者" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <!--        点赞、保存、分享按钮区垂直分布-->
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:orientation="vertical">
-
-            <!--            点赞图标-->
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/button_like"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:background="@drawable/like" />
-
-            <TextView
-                android:id="@+id/textViewLikeNum"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-
-            <!--            保存图标-->
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/button_save"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="15dp"
-                android:background="@drawable/save" />
-
-            <!--            分享图标-->
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/button_share"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="15dp"
-                android:background="@drawable/share" />
-
-            <!--            分享图标-->
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/button_delete"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:background="@drawable/delete" />
-
-        </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 </androidx.cardview.widget.CardView>

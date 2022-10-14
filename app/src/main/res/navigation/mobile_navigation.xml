@@ -7,13 +7,13 @@
 
     <fragment
             android:id="@+id/navigation_home"
-            android:name="com.kerwinkeep.pictureshare.ui.home.HomeFragment"
+            android:name="com.yitu.pictureshare.fragments.home.HomeFragment"
             android:label="@string/title_home"
-            tools:layout="@layout/fragment_home"/>
+            tools:layout="@layout/fragment_home" />
 
     <fragment
             android:id="@+id/navigation_profile"
-            android:name="com.kerwinkeep.pictureshare.ui.profile.ProfileFragment"
+            android:name="com.yitu.pictureshare.fragments.profile.ProfileFragment"
             android:label="@string/title_profile"
             tools:layout="@layout/fragment_profile"/>
 
