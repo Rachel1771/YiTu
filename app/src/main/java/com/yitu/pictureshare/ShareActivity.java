@@ -14,15 +14,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.yitu.pictureshare.common.AppAuthorization;
 import com.yitu.pictureshare.common.DcimUriget;
 
 import java.io.File;
@@ -44,18 +45,16 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
     private EditText editTextUploadTitle;
     private EditText editTextUploadInfo;
     private Bitmap picture;
-    private static File fileer;
     private static String filePath;
-    private String imageCode;
-    private String userId;
+    private long imageCode;
+    private long userId;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share);
-        editTextUploadTitle = findViewById(R.id.editTextUploadInfo);
+        editTextUploadTitle = findViewById(R.id.editTextUploadTitle);
         editTextUploadInfo = findViewById(R.id.editTextUploadInfo);
         Button buttonSelectPicture = findViewById(R.id.button_select_picture);
         imageViewUploadPicture = findViewById(R.id.imageViewUploadPicture);
@@ -63,14 +62,20 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
         buttonSelectPicture.setOnClickListener(this);
         imageViewUploadPicture.setOnClickListener(this);
         buttonUpload.setOnClickListener(this);
-
+        progressBar = findViewById(R.id.progressBar_share);
         Context ctx = ShareActivity.this;
         SharedPreferences sp = ctx.getSharedPreferences("SP", MODE_PRIVATE);
         //存入数据
         SharedPreferences.Editor editor = sp.edit();
 
-        userId = sp.getString("userId",null);
+        userId = Long.parseLong(sp.getString("id",null));
         System.out.println("_____________________________userId"+userId);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
     }
 
     @Override
@@ -81,8 +86,6 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
         } else if (R.id.buttonUpload == id) {
             if(picture != null){
                 uploadPicture();
-                publishPicture(imageCode, userId,editTextUploadTitle.getText().toString(), editTextUploadInfo.getText().toString());
-
             }else{
                 Toast toast = Toast.makeText(ShareActivity.this, "未选择图片", Toast.LENGTH_SHORT);
                 toast.show();
@@ -114,7 +117,7 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
     }
 
     public void uploadPicture(){
-
+        progressBar.setVisibility(View.VISIBLE);
         ActivityCompat.requestPermissions(ShareActivity.this,
                 new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 1);
@@ -123,11 +126,11 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
 //        String url = "http://35.241.95.124:8081/user/login";
         OkHttpClient client = new OkHttpClient();
         MediaType mediaType=MediaType.Companion.parse("image/*; charset=utf-8");
+        SharedPreferences sp = ShareActivity.this.getSharedPreferences("SP", Context.MODE_PRIVATE);
+        String appId = AppAuthorization.getAppId(sp);
+        String appSecret = AppAuthorization.getAppSecret(sp);
 
-        String appId = "a908aec7a6dc4838b16c5457f9efda35";
-        String appSecret = "017601aa79d33218741d0adaff0e4b537603d";
-
-        fileer = new File(filePath);
+        File fileer = new File(filePath);
 
         //构建表单参数
         //添加请求体
@@ -136,7 +139,7 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
         //第二层，指明服务表单的键名，文件名，文件体
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("fileList",fileer.getName(),fileBody)
+                .addFormDataPart("fileList", fileer.getName(),fileBody)
                 .build();
 
         Request request = new Request.Builder()
@@ -151,7 +154,11 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.d("upload", "上传图片连接失败" + e.getLocalizedMessage());
+                Log.d("upload", "上传图片失败" + e.getLocalizedMessage());
+                Looper.prepare();
+                progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(ShareActivity.this, "上传失败", Toast.LENGTH_SHORT).show();
+                Looper.loop();
             }
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -159,7 +166,8 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
                 System.out.println("————————响应数据———————"+result);
                 if(result.get("msg").equals("成功")){
                     Log.d("upload", result.toString());
-                    imageCode = JSON.parseObject(result.get("data").toString()).get("imageCode").toString();
+                    imageCode = Long.parseLong(JSON.parseObject(result.get("data").toString()).get("imageCode").toString());
+                    publishPicture(imageCode, userId,editTextUploadTitle.getText().toString(), editTextUploadInfo.getText().toString());
                 }else
                     Log.d("upload", result.toString());
                 response.body().close();
@@ -167,13 +175,13 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
         });
     }
 
-    public void publishPicture(String userId, String imageCode,String title, String content){
+    public void publishPicture(long imageCode, long userId,String title, String content){
         String url = "http://47.107.52.7:88/member/photo/share/add";
 //        String url = "http://35.241.95.124:8081/user/login";
         OkHttpClient client = new OkHttpClient();
-
-        String appId = "fe5dfc29e21e468f8a8c01861331b9d9";
-        String appSecret = "598422f155b9e538d49f99a217bc9fdfe2f38";
+        SharedPreferences sp = ShareActivity.this.getSharedPreferences("SP", Context.MODE_PRIVATE);
+        String appId = AppAuthorization.getAppId(sp);
+        String appSecret = AppAuthorization.getAppSecret(sp);
 
         JSONObject jsonObject = new JSONObject();
 
@@ -192,21 +200,35 @@ public class ShareActivity extends AppCompatActivity implements View.OnClickList
                 .post(body)
                 .build();
         System.out.println("——————————请求信息——————————\n"+request);
+        System.out.println("id:"+userId);
+        System.out.println("imageCode:"+ imageCode);
+        System.out.println("title:"+title);
+        System.out.println("Content:"+content);
 
         //异步请求
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d("register", "连接失败" + e.getLocalizedMessage());
+                progressBar.setVisibility(View.INVISIBLE);
+                Looper.prepare();
+                Toast.makeText(ShareActivity.this, "分享失败", Toast.LENGTH_SHORT).show();
+                Looper.loop();
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 Map result = JSON.parseObject(response.body().string());
                 System.out.println("————————————响应信息————————————\n"+result.toString());
+                progressBar.setVisibility(View.INVISIBLE);
                 if (result.get("code").toString().equals("200")) {
-                    Intent intent = new Intent(ShareActivity.this, com.yitu.pictureshare.IndexActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    Intent intent = new Intent(ShareActivity.this, IndexActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    intent.putExtra("toFresh", true);
                     startActivity(intent);
+                    finish();
+                    Looper.prepare();
+                    Toast.makeText(ShareActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
                 }else{
                     Looper.prepare();
                     Toast.makeText(ShareActivity.this, (String)result.get("msg"), Toast.LENGTH_SHORT).show();

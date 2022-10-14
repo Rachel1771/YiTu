@@ -16,10 +16,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.alibaba.fastjson.JSON;
+import com.yitu.pictureshare.common.AppAuthorization;
 
 import java.io.IOException;
 import java.util.Map;
@@ -37,19 +37,30 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private EditText accountEditText;
     private EditText passwordEditText;
     private CheckBox passwordSave;
+    private Button button_login_to_setting;
     ImageView pwdVisibility;
     private Boolean pwdSwitch = false;
     private Boolean isSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+
 
         Context ctx = LoginActivity.this;
         SharedPreferences sp = ctx.getSharedPreferences("SP", MODE_PRIVATE);
-        //存入数据
+
+        //存入数据，如果不存在appId和appSecret则默认填入以下值
         SharedPreferences.Editor editor = sp.edit();
+        if(sp.getString("appId",null) == null || sp.getString("appSecret",null) == null) {
+            editor.putString("appId", "79a8c1a3c4f44ce39fb9feb179debb74");
+            editor.putString("appSecret", "731153635a9226b4a42ce8b80dc45e18ae770");
+            editor.apply();
+            System.out.println("已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入已写入");
+            System.out.println(sp.getString("appId",null));
+            System.out.println(sp.getString("appSecret",null));
+        }else {
+            System.out.println(sp.getString("appId",null));
+        }
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
@@ -57,6 +68,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         accountEditText = findViewById(R.id.edittext_account);
         passwordEditText = findViewById(R.id.edittext_password);
         passwordSave = findViewById(R.id.save_password);
+        button_login_to_setting = findViewById(R.id.button_login_to_setting);
 
         if(sp.getString("username", null) != null && sp.getString("password",null)!=null){
             accountEditText.setText(sp.getString("username",null));
@@ -88,17 +100,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
         });
+
+        button_login_to_setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(LoginActivity.this, SettingActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            }
+        });
     }
-
-
 
     public boolean verifyLogin(String username, String password) {//登录
 
         String url = "http://47.107.52.7:88/member/photo/user/login";
         OkHttpClient client = new OkHttpClient();
 
-        String appId = "fe5dfc29e21e468f8a8c01861331b9d9";
-        String appSecret = "598422f155b9e538d49f99a217bc9fdfe2f38";
+        Context ctx = LoginActivity.this;
+        SharedPreferences sp = ctx.getSharedPreferences("SP", Context.MODE_PRIVATE);
+        String appId = AppAuthorization.getAppId(sp);
+        String appSecret = AppAuthorization.getAppSecret(sp);
 
         //构建表单参数
         //添加请求体
@@ -119,38 +138,46 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d("MainActivityPost---", "连接失败" + e.getLocalizedMessage());
+                Looper.prepare();
+                Toast.makeText(LoginActivity.this, "网络连接失败", Toast.LENGTH_SHORT).show();
+                Looper.loop();
             }
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 Map result = JSON.parseObject(response.body().string());
                 System.out.println("————————————响应信息————————————\n"+result.toString());
+                if(result.get("msg") != null){
+                    if (result.get("msg").equals("登录成功")) {
+                        Log.d("登录信息---", (String)result.get("msg"));
 
-                if (result.get("msg").equals("登录成功")) {
-                    Log.d("登录信息---", (String)result.get("msg"));
+                        Context ctx = LoginActivity.this;
+                        SharedPreferences sp = ctx.getSharedPreferences("SP", MODE_PRIVATE);
+                        //存入数据
+                        SharedPreferences.Editor editor = sp.edit();
 
-                    Context ctx = LoginActivity.this;
-                    SharedPreferences sp = ctx.getSharedPreferences("SP", MODE_PRIVATE);
-                    //存入数据
-                    SharedPreferences.Editor editor = sp.edit();
+                        if(passwordSave.isChecked()){
+                            editor.putString("id", JSON.parseObject(result.get("data").toString()).get("id").toString());
+                            editor.putString("username", username);
+                            editor.putBoolean("isLogin",true);
+                            editor.putString("password",password);
+                            editor.apply();
+                        }else{
+                            editor.putString("id", JSON.parseObject(result.get("data").toString()).get("id").toString());
+                            editor.putString("username", username);
+                            editor.apply();
+                        }
 
-                    if(passwordSave.isChecked()){
-                        editor.putString("id", JSON.parseObject(result.get("data").toString()).get("id").toString());
-                        editor.putString("username", username);
-                        editor.putBoolean("isLogin",true);
-                        editor.putString("password",password);
-                        editor.apply();
-                    }else{
-                        editor.putString("id", JSON.parseObject(result.get("data").toString()).get("id").toString());
-                        editor.putString("username", username);
-                        editor.putBoolean("isLogin",true);
-                        editor.apply();
-                    }
-
-                    Intent intent = new Intent(LoginActivity.this, IndexActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    intent.putExtra("userId", JSON.parseObject(result.get("data").toString()).get("id").toString());
-                    startActivity(intent);
-                } else
-                    Log.d("登录信息---", (String)result.get("msg"));
+                        Intent intent = new Intent(LoginActivity.this, IndexActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        intent.putExtra("userId", JSON.parseObject(result.get("data").toString()).get("id").toString());
+                        startActivity(intent);
+                        finish();
+                    } else
+                        Log.d("登录信息---", (String)result.get("msg"));
+                }else if(result.get("msg") == null){
+                    Looper.prepare();
+                    Toast.makeText(LoginActivity.this, result.get("errorMsg").toString(), Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                }
                 response.body().close();
                 Looper.prepare();
                 Toast.makeText(LoginActivity.this, result.get("msg").toString(), Toast.LENGTH_SHORT).show();

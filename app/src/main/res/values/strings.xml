@@ -25,4 +25,21 @@
     <string name="input_account_hint">账户</string>
     <string name="register_hint">注册</string>
     <string name="input_username_hint">用户名</string>
+    <string name="title_activity_user_setting">UserSettingActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="fenxiang">分享</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.yitu.pictureshare;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -9,11 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.yitu.pictureshare.common.AppAuthorization;
 
 import java.io.IOException;
 import java.util.Map;
@@ -34,8 +36,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         editTextPassword  = findViewById(R.id.editViewRegisterPassword);
@@ -63,8 +64,9 @@ public class RegisterActivity extends AppCompatActivity {
 //        String url = "http://35.241.95.124:8081/user/login";
         OkHttpClient client = new OkHttpClient();
 
-        String appId = "fe5dfc29e21e468f8a8c01861331b9d9";
-        String appSecret = "598422f155b9e538d49f99a217bc9fdfe2f38";
+        SharedPreferences sp = RegisterActivity.this.getSharedPreferences("SP", Context.MODE_PRIVATE);
+        String appId = AppAuthorization.getAppId(sp);
+        String appSecret = AppAuthorization.getAppSecret(sp);
 
         JSONObject jsonObject = new JSONObject();
 
@@ -93,10 +95,11 @@ public class RegisterActivity extends AppCompatActivity {
                 Map result = JSON.parseObject(response.body().string());
                 System.out.println("————————————响应信息————————————\n"+result.toString());
                 if (result.get("code").toString().equals("200")) {
-                    Intent intent = new Intent(RegisterActivity.this, com.yitu.pictureshare.LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
                     Looper.prepare();
                     Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
-                    startActivity(intent);
                     Looper.loop();
                 }else{
                     Looper.prepare();
