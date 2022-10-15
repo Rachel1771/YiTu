@@ -11,3 +11,10 @@
 
 #### 3.第三次提交
 添加了最后的实验报告
+
+#### 4.Others
+
+- Android、Java、OKHttpClient、Glide、 PhotoView
+- 推荐软件：AndroidStudio
+- [OpenAPI](http://47.107.52.7/api/home)
+- 感谢[Xingguo QIN]( [xgqin (Xingguo QIN) (github.com)](https://github.com/xgqin) )
