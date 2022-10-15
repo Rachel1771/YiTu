@@ -16,7 +16,6 @@ import com.yitu.pictureshare.R;
 import com.yitu.pictureshare.bean.ShareBean;
 
 import java.util.List;
-
 public class SharesAdapter extends BaseAdapter {
     private CardView cardview;
     private Context mContext;
